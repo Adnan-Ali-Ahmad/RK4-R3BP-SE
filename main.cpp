@@ -25,7 +25,7 @@ int main(int argc, char* argv[]){
 
   	//initialize MPI
 	MPI_Init(NULL, NULL);
-   	int world_rank;
+  	int world_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 	int world_size;
 	MPI_Comm_size(MPI_COMM_WORLD, &world_size);
@@ -42,7 +42,7 @@ int main(int argc, char* argv[]){
 	}
 
 	N_ast = round(N_ast/world_size);
-	std::cout<<Stime<<std::endl;
+
 
     object sun(1.989e30,195.*695510e3,5000.);
     object jup(1.89813e27,69911e3,0.,1330.,5.20336301,0.04839266,0.,14.75385,100.55615,34.40438); //Jupiter
@@ -68,14 +68,45 @@ int main(int argc, char* argv[]){
     object M3[N_ast]; //asteroid copies
     distances SIM[N_ast];
 
-    ofstream file1("Outputs/process"+to_string(world_rank)+"_a0.txt");
-    ofstream file2("Outputs/process"+to_string(world_rank)+"_a.txt");
-    ofstream file3("Outputs/process"+to_string(world_rank)+"_initial_distribution.txt");
-    ofstream file4("Outputs/process"+to_string(world_rank)+"_final_distribution.txt");
-    ofstream file5("Outputs/process"+to_string(world_rank)+"_jup.txt");
-    ofstream file6("Outputs/process"+to_string(world_rank)+"_ast_kep.txt");
-    ofstream file7("Outputs/process"+to_string(world_rank)+"_t.txt");
-    ofstream file8("Outputs/process"+to_string(world_rank)+"_jup_kep.txt");
+    char filename1[0x100];
+    char filename2[0x100];
+    char filename3[0x100];
+    char filename4[0x100];
+    char filename5[0x100];
+    char filename6[0x100];
+    char filename7[0x100];
+    char filename8[0x100];
+    sprintf(filename1,"Outputs/process%d_a0.txt",world_rank);
+    sprintf(filename2,"Outputs/process%d_a.txt",world_rank);
+    sprintf(filename3,"Outputs/process%d_initial_distribution.txt",world_rank);
+    sprintf(filename4,"Outputs/process%d_final_distribution.txt",world_rank);
+    sprintf(filename5,"Outputs/process%d_jup.txt",world_rank);
+    sprintf(filename6,"Outputs/process%d_ast_kep.txt",world_rank);
+    sprintf(filename7,"Outputs/process%d_t.txt",world_rank);
+    sprintf(filename8,"Outputs/process%d_jup_kep.txt",world_rank);
+
+    std::ofstream file1;
+    std::ofstream file2;
+    std::ofstream file3;
+    std::ofstream file4;
+    std::ofstream file5;
+    std::ofstream file6;
+    std::ofstream file7;
+    std::ofstream file8;
+
+    file1.open(filename1);
+    file2.open(filename2);
+    file3.open(filename3);
+    file4.open(filename4);
+    file5.open(filename5);
+    file6.open(filename6);
+    file7.open(filename7);
+    file8.open(filename8);
+
+    // for(int i=0;i<N_ast;i++){
+    //     ofstream file;
+    //     file.open("../Outputs_KWINDS/traj/ast"+to_string(i)+".txt");
+    // }
 
 
     for(int i=0;i<N_ast;i++){
@@ -84,16 +115,13 @@ int main(int argc, char* argv[]){
         ast[i].i = fRand(0.,5.);
         ast[i].e = fRand(0.,0.02);
         ast[i].density = 2000.;
-        ast[i].R = fRand(1000.,10e3);
-        std::cout<<"Asteroid size: "<<ast[i].R<<" m"<<std::endl;
-        std::cout<<"Asteroid semimajor axis: "<<ast[i].a<<" AU"<<std::endl;
+        ast[i].R = fRand(100.,10e3);
         ast[i].m = 1.33*pi*ast[i].R*ast[i].R*ast[i].R*ast[i].density;
         get_cartesian(GM,t,t0,ast[i]);
         ast[i].write_out_keplerian(file1);
         write_in_COM(ast[i],COM,file3);
     }
-	
-    dt = adapt_dt(GM,ast,N_ast,5000.);
+    dt = adapt_dt(GM,ast,N_ast,1000.);
 
     //write_in_COM(jup,COM,file5);
     cout<<"Timestep = "<<dt<<" seconds."<<endl;
@@ -101,21 +129,20 @@ int main(int argc, char* argv[]){
     while(t < T){
 
         if((it%snapshot) == 0){
-            // cout<<"Process "<<world_rank<<" Simulation Progress: "<<floor(100.*t/T)+1<<"%\r";
-            cout<<" Simulation Progress: "<<floor(100.*t/T)+1<<"%\r";
+            cout<<"Process "<<world_rank<<" Simulation Progress: "<<floor(100.*t/T)+1<<"%"<<endl;
             
-            //update_COM(COM,sun,jup);
-            write_in_COM(jup,sun,file5);
-            GM = G*(sun.m);
-            get_keplerian(GM,jup,sun);
-            jup.write_out_keplerian(file8);
-            for(int i=0;i<N_ast;i++){
-                //ofstream file;
-                //file.open("../Outputs/traj/ast"+to_string(i)+".txt",fstream::app);
-                //write_in_COM(ast[i],sun,file);
-                get_keplerian(GM,ast[i],sun); ast[i].write_out_keplerian(file6);
-                file7 << t << endl;
-            }
+            // //update_COM(COM,sun,jup);
+            // write_in_COM(jup,sun,file5);
+            // GM = G*(sun.m);
+            // get_keplerian(GM,jup,sun);
+            // jup.write_out_keplerian(file8);
+            // for(int i=0;i<N_ast;i++){
+            //     ofstream file;
+            //     file.open("../Outputs_KWINDS/traj/ast"+to_string(i)+".txt",fstream::app);
+            //     write_in_COM(ast[i],sun,file);
+            //     get_keplerian(GM,ast[i],sun); ast[i].write_out_keplerian(file6);
+            //     file7 << t << endl;
+            // }
         }
         RK4(sun,jup,M1,M2,M3,ast,SIM,P,N_ast,dt);
         t+=dt;
@@ -128,7 +155,7 @@ int main(int argc, char* argv[]){
         ast[i].write_out_keplerian(file2);
         write_in_COM(ast[i],COM,file4);
     }
-
+	
 	MPI_Finalize();
     return 0;
 }
