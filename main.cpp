@@ -34,7 +34,7 @@ int main(int argc, char* argv[]){
 	double Stime;
 	try{
 		N_ast = std::stoi(argv[1]); //number of asteroids
-		Stime = std::stod(argv[2]); //simulation time in number of orbital periods of closest ast to sun
+		Stime = std::stod(argv[2]); //simulation time in number of years
 	}
 		catch (const std::exception &exc){
 		std::cerr<<"ERROR: Please provide number of asteroids and simulation time"<<std::endl;
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]){
     object M2 = jup;
 
     double GM = G*(sun.m);
-    double T = Stime*orbital_period(GM,1.);//0.5*1e6*orbital_period(GM,1.); //simulation time
+    double T = Stime*orbital_period(GM,1.); //simulation time
     int it = 0;
     double dt; //time step
     int snapshot = 9000;
