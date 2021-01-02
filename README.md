@@ -1,7 +1,7 @@
 # RK4-R3BP-SE
 Runge-Kutta order 4, Restricted 3 Body Problem, Stellar Evolution
 
-Source code of the simulations run in the Ahmad et al 2020 paper.
+Source code of the simulations run in the Ahmad et al 2020 paper. The code uses the MPI library for parallelization and can run on N cores.
 
 
 
