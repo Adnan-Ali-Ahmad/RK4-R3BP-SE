@@ -45,7 +45,7 @@ double acc3z(object &M1,object &M2,object &M3,distances &SIM){
 }
 
 double mass_loss(parameters P){
-return 0.;
+//return 0.;
     return -P.mls/31557600.0; //mass loss is per year
 }
 
